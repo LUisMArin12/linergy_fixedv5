@@ -96,34 +96,36 @@ function ToastItem({
 }
 
 export default function Toast({ toasts, onRemove, duration }: ToastProps) {
-  return (
-    <>
-      {toasts.length > 0 && (
-        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto"
-            onClick={() => toasts.forEach(toast => onRemove(toast.id))}
-          />
+  if (!toasts || toasts.length === 0) {
+    return null;
+  }
 
-          <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-md pointer-events-auto">
-            <AnimatePresence mode="popLayout">
-              {toasts.map((toast) => (
-                <ToastItem
-                  key={toast.id}
-                  id={toast.id}
-                  message={toast.message}
-                  type={toast.type}
-                  onRemove={onRemove}
-                  duration={duration}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto"
+          onClick={() => toasts.forEach(toast => onRemove(toast.id))}
+        />
+
+        <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-md pointer-events-auto">
+          <AnimatePresence mode="popLayout">
+            {toasts.map((toast) => (
+              <ToastItem
+                key={toast.id}
+                id={toast.id}
+                message={toast.message}
+                type={toast.type}
+                onRemove={onRemove}
+                duration={duration}
+              />
+            ))}
+          </AnimatePresence>
         </div>
-      )}
-    </>
+      </div>
+    </AnimatePresence>
   );
 }
