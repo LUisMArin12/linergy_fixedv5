@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Search, PlusCircle, Share2, Menu, PanelLeft } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Search, PlusCircle, Share2, Menu, PanelLeft, PanelLeftClose } from 'lucide-react';
 import Button from '../ui/Button';
 import { useMapFocus } from '../../contexts/MapFocusContext';
+import { useSidebar } from '../../contexts/SidebarContext';
 
 interface HeaderProps {
   onOpenMobileSidebar: () => void;
@@ -19,8 +21,10 @@ export default function Header({
   onSearchChange,
 }: HeaderProps) {
   const { setIsRegisterFaultOpen } = useMapFocus();
+  const { isMapSidebarCollapsed, setIsMapSidebarCollapsed } = useSidebar();
+  const location = useLocation();
+  const isMapPage = location.pathname === '/dashboard/mapa';
 
-  // ✅ Draft local: permite "ejecutar búsqueda" y luego limpiar el input sin perder el filtro aplicado
   const [draft, setDraft] = useState(searchQuery);
 
   // Si el searchQuery cambia externamente, sincroniza solo si el usuario no está tecleando
@@ -51,7 +55,7 @@ export default function Header({
               <Menu className="w-5 h-5 text-[#6B7280]" />
             </button>
 
-            {/* Desktop: colapsar sidebar */}
+            {/* Desktop: colapsar sidebar principal */}
             <button
               type="button"
               onClick={onToggleDesktopSidebar}
@@ -60,6 +64,22 @@ export default function Header({
             >
               <PanelLeft className="w-5 h-5 text-[#6B7280]" />
             </button>
+
+            {/* Desktop: colapsar panel lateral del mapa */}
+            {isMapPage && (
+              <button
+                type="button"
+                onClick={() => setIsMapSidebarCollapsed(!isMapSidebarCollapsed)}
+                className="hidden md:inline-flex p-2 rounded-lg hover:bg-[#F7FAF8] transition-colors"
+                aria-label="Colapsar panel de filtros"
+              >
+                {isMapSidebarCollapsed ? (
+                  <PanelLeft className="w-5 h-5 text-[#157A5A]" />
+                ) : (
+                  <PanelLeftClose className="w-5 h-5 text-[#6B7280]" />
+                )}
+              </button>
+            )}
 
             <div className="flex-1">
               <div className="relative">

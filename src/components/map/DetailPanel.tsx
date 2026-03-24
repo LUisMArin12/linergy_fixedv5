@@ -1,16 +1,7 @@
 // src/components/map/DetailPanel.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  X,
-  ExternalLink,
-  Navigation,
-  Crosshair,
-  Edit2,
-  Trash2,
-  CheckCircle,
-  Share2,
-} from 'lucide-react';
+import { X, ExternalLink, Navigation, Crosshair, CreditCard as Edit2, Trash2, CheckCircle, Share2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
@@ -334,6 +325,16 @@ export default function DetailPanel({ item, type, onClose, onCenterMap }: Detail
               </div>
 
               <div className="pt-4 border-t border-[#E5E7EB] space-y-2">
+                <Button
+                  variant="secondary"
+                  icon={<Crosshair className="w-4 h-4" />}
+                  onClick={handleCenterMap}
+                  className="w-full"
+                  disabled={lat === null || lon === null}
+                >
+                  Centrar en mapa
+                </Button>
+
                 {isAdmin && (
                   <>
                     <Button

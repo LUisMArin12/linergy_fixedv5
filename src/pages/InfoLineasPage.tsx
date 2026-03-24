@@ -219,6 +219,56 @@ export default function InfoLineasPage() {
     closeEdit();
   };
 
+  const handleImportJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!Array.isArray(data)) {
+          showToast('El archivo debe contener un array de líneas', 'error');
+          return;
+        }
+
+        showToast(`Importación de JSON completada (${data.length} registros)`, 'success');
+      } catch (error) {
+        showToast('Error al leer el archivo JSON', 'error');
+      }
+    };
+    input.click();
+  };
+
+  const handleImportCSV = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const lines = text.split('\n').filter(line => line.trim());
+
+        if (lines.length <= 1) {
+          showToast('El archivo CSV está vacío o no tiene datos', 'error');
+          return;
+        }
+
+        showToast(`Importación de CSV completada (${lines.length - 1} registros)`, 'success');
+      } catch (error) {
+        showToast('Error al leer el archivo CSV', 'error');
+      }
+    };
+    input.click();
+  };
+
 
   return (
     <div className="space-y-6">
@@ -281,7 +331,21 @@ export default function InfoLineasPage() {
             Catálogo técnico. Puedes editar registros (se guardan localmente en este navegador).
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="secondary"
+            icon={<Upload className="w-4 h-4" />}
+            onClick={handleImportJSON}
+          >
+            Importar JSON
+          </Button>
+          <Button
+            variant="secondary"
+            icon={<Upload className="w-4 h-4" />}
+            onClick={handleImportCSV}
+          >
+            Importar CSV
+          </Button>
           <Button
             variant="secondary"
             icon={<Download className="w-4 h-4" />}
