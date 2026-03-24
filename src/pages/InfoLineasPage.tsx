@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Search, Pencil, X, Download, Trash2, Plus, Lock } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -8,7 +7,6 @@ import Modal from '../components/ui/Modal';
 import { useSearch } from '../contexts/SearchContext';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 import { LINEAS_CATALOG, type LineaCatalogEntry } from '../lib/lineaCatalog';
 import { useDragScroll } from '../hooks/useDragScroll';
 
@@ -278,14 +276,14 @@ export default function InfoLineasPage() {
     showToast('Registro restablecido a valores originales', 'success');
   };
 
-  const handleScrollIndicators = () => {
+  const handleScrollIndicators = useCallback(() => {
     const container = tableContainerRef.current;
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
     setShowLeftShadow(scrollLeft > 0);
     setShowRightShadow(scrollLeft < scrollWidth - clientWidth - 1);
-  };
+  }, [tableContainerRef]);
 
   useEffect(() => {
     handleScrollIndicators();
