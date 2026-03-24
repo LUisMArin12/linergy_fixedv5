@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Pencil, X, Download, Upload, Trash2, Plus } from 'lucide-react';
+import { Search, Pencil, X, Download, Trash2, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
@@ -275,30 +275,6 @@ export default function InfoLineasPage() {
     showToast('Registro restablecido a valores originales', 'success');
   };
 
-  const handleImportCSV = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      try {
-        const text = await file.text();
-        const lines = text.split('\n').filter(line => line.trim());
-
-        if (lines.length <= 1) {
-          showToast('El archivo CSV está vacío o no tiene datos', 'error');
-          return;
-        }
-
-        showToast(`Importación de CSV completada (${lines.length - 1} registros)`, 'success');
-      } catch (error) {
-        showToast('Error al leer el archivo CSV', 'error');
-      }
-    };
-    input.click();
-  };
 
 
   return (
@@ -372,13 +348,6 @@ export default function InfoLineasPage() {
             onClick={openCreate}
           >
             Agregar
-          </Button>
-          <Button
-            variant="secondary"
-            icon={<Upload className="w-4 h-4" />}
-            onClick={handleImportCSV}
-          >
-            Importar CSV
           </Button>
           <Button
             variant="secondary"
@@ -468,8 +437,8 @@ export default function InfoLineasPage() {
       {/* Desktop: table */}
       <div className="hidden md:block">
         <Card>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
+          <div className="overflow-x-auto overflow-y-visible">
+            <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
                   <th className="text-left py-3 px-4 font-semibold">CLAVE ENLACE</th>
