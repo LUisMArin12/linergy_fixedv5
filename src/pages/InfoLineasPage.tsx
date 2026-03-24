@@ -277,7 +277,8 @@ export default function InfoLineasPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mx-4 sm:-mx-6">
+      <div className="px-4 sm:px-6 space-y-6">
     <Modal isOpen={!!editing} onClose={closeEdit} title={isCreating ? "Agregar nueva línea" : "Editar información de línea"} size="lg">
       {!form ? null : (
         <div className="space-y-4">
@@ -373,8 +374,10 @@ export default function InfoLineasPage() {
         </div>
       </div>
 
+      </div>
+
       {/* Mobile: cards */}
-      <div className="grid grid-cols-1 gap-3 md:hidden">
+      <div className="grid grid-cols-1 gap-3 md:hidden px-4 sm:px-6">
         {filtered.map((e) => (
           <div
             key={`${e.claveEnlace}-${e.tipoEstructura}-${e.anio ?? 'na'}`}
@@ -434,7 +437,8 @@ export default function InfoLineasPage() {
       </div>
 
       {/* Desktop: table */}
-      <div className="hidden md:block overflow-x-auto bg-white rounded-xl border border-[#E5E7EB]">
+      <div className="hidden md:block overflow-x-auto">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] inline-block min-w-full">
         <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
           <thead>
             <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
@@ -505,6 +509,7 @@ export default function InfoLineasPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
