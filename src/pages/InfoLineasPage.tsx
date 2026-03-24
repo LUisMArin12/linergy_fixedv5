@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { Search, Pencil, X, Download, Trash2, Plus } from 'lucide-react';
+import { Search, Pencil, X, Download, Trash2, Plus, Lock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useSearch } from '../contexts/SearchContext';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { LINEAS_CATALOG, type LineaCatalogEntry } from '../lib/lineaCatalog';
 import { useDragScroll } from '../hooks/useDragScroll';
@@ -91,6 +92,7 @@ function toNumberOrNull(v: string): number | null {
 export default function InfoLineasPage() {
   const { searchQuery, setSearchQuery } = useSearch();
   const { showToast } = useToast();
+  const { isAdmin } = useAuth();
 
   const [overrides, setOverrides] = useState<OverridesMap>({});
   const [editing, setEditing] = useState<LineaCatalogEntry | null>(null);
@@ -137,12 +139,20 @@ export default function InfoLineasPage() {
   }, [searchQuery, mergedCatalog]);
 
   const openEdit = (e: LineaCatalogEntry) => {
+    if (!isAdmin) {
+      showToast('Solo los administradores pueden editar registros', 'error');
+      return;
+    }
     setEditing(e);
     setForm(toEditState(e));
     setIsCreating(false);
   };
 
   const openCreate = () => {
+    if (!isAdmin) {
+      showToast('Solo los administradores pueden agregar registros', 'error');
+      return;
+    }
     const newEntry: LineaCatalogEntry = {
       claveEnlace: '',
       numero: '',
@@ -365,14 +375,25 @@ export default function InfoLineasPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#111827]">Información Líneas</h1>
           <p className="text-sm text-[#6B7280] mt-1">
-            Catálogo técnico. Puedes editar registros (se guardan localmente en este navegador).
+            {isAdmin
+              ? 'Catálogo técnico. Puedes editar registros (se guardan localmente en este navegador).'
+              : 'Catálogo técnico de líneas de transmisión. Solo lectura.'}
           </p>
+          {!isAdmin && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+              <Lock className="w-4 h-4" />
+              <span>Solo los administradores pueden editar, agregar o eliminar registros</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <Button
             variant="primary"
             icon={<Plus className="w-4 h-4" />}
             onClick={openCreate}
+            disabled={!isAdmin}
+            className={!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}
+            title={!isAdmin ? 'Solo administradores pueden agregar registros' : 'Agregar nuevo registro'}
           >
             Agregar
           </Button>
@@ -419,16 +440,28 @@ export default function InfoLineasPage() {
                 <Badge>{e.tension}</Badge>
                 <button
                   type="button"
-                  className="p-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                  className={`p-2 rounded-lg border border-[#E5E7EB] ${
+                    isAdmin ? 'hover:bg-[#F9FAFB] cursor-pointer' : 'opacity-40 cursor-not-allowed'
+                  }`}
                   onClick={() => openEdit(e)}
                   aria-label="Editar"
+                  disabled={!isAdmin}
+                  title={!isAdmin ? 'Solo administradores pueden editar' : 'Editar'}
                 >
                   <Pencil className="w-4 h-4 text-[#111827]" />
                 </button>
                 <button
                   type="button"
-                  className="p-2 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                  className={`p-2 rounded-lg border ${
+                    isAdmin
+                      ? 'border-red-300 bg-white hover:bg-red-50 cursor-pointer'
+                      : 'border-[#E5E7EB] bg-gray-50 opacity-40 cursor-not-allowed'
+                  } transition-colors`}
                   onClick={() => {
+                    if (!isAdmin) {
+                      showToast('Solo los administradores pueden eliminar registros', 'error');
+                      return;
+                    }
                     if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
                       const next: OverridesMap = { ...overrides };
                       next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
@@ -438,9 +471,10 @@ export default function InfoLineasPage() {
                     }
                   }}
                   aria-label="Eliminar"
-                  title="Eliminar"
+                  title={!isAdmin ? 'Solo administradores pueden eliminar' : 'Eliminar'}
+                  disabled={!isAdmin}
                 >
-                  <Trash2 className="w-4 h-4 text-red-600" />
+                  <Trash2 className={`w-4 h-4 ${isAdmin ? 'text-red-600' : 'text-gray-400'}`} />
                 </button>
               </div>
             </div>
@@ -519,16 +553,28 @@ export default function InfoLineasPage() {
                   <div className="flex items-center justify-end gap-2">
                     <button
                       type="button"
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] ${
+                        isAdmin ? 'hover:bg-[#F9FAFB] cursor-pointer' : 'opacity-40 cursor-not-allowed bg-gray-50'
+                      }`}
                       onClick={() => openEdit(e)}
+                      disabled={!isAdmin}
+                      title={!isAdmin ? 'Solo administradores pueden editar' : 'Editar'}
                     >
                       <Pencil className="w-4 h-4" />
                       <span className="text-xs font-medium">Editar</span>
                     </button>
                     <button
                       type="button"
-                      className="p-2 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                      className={`p-2 rounded-lg border ${
+                        isAdmin
+                          ? 'border-red-300 bg-white hover:bg-red-50 cursor-pointer'
+                          : 'border-[#E5E7EB] bg-gray-50 opacity-40 cursor-not-allowed'
+                      } transition-colors`}
                       onClick={() => {
+                        if (!isAdmin) {
+                          showToast('Solo los administradores pueden eliminar registros', 'error');
+                          return;
+                        }
                         if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
                           const next: OverridesMap = { ...overrides };
                           next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
@@ -538,9 +584,10 @@ export default function InfoLineasPage() {
                         }
                       }}
                       aria-label="Eliminar"
-                      title="Eliminar"
+                      title={!isAdmin ? 'Solo administradores pueden eliminar' : 'Eliminar'}
+                      disabled={!isAdmin}
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 className={`w-4 h-4 ${isAdmin ? 'text-red-600' : 'text-gray-400'}`} />
                     </button>
                   </div>
                 </td>
