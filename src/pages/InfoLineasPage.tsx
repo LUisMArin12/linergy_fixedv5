@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search, Pencil, X, Download, Trash2, Plus, Lock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
@@ -103,31 +103,20 @@ export default function InfoLineasPage() {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
 
-  const { data: lineasDB = [] } = useQuery({
-    queryKey: ['lineas_db'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('lineas')
-        .select('*')
-        .order('numero');
-      if (error) throw error;
-      return data || [];
-    },
-  });
 
   useEffect(() => {
     setOverrides(loadOverrides());
   }, []);
 
   const mergedCatalog = useMemo(() => {
-    const catalogEntries = LINEAS_CATALOG.map((e) => mergeEntry(e, overrides)).filter((e: any) => !e.hidden);
+    const catalogEntries = LINEAS_CATALOG.map((e) => mergeEntry(e, overrides)).filter((e) => !('hidden' in e && e.hidden));
 
     const newEntries = Object.entries(overrides)
       .filter(([key, override]) => {
         const existsInCatalog = LINEAS_CATALOG.some(e => e.claveEnlace === key);
-        return !existsInCatalog && !(override as any).hidden;
+        return !existsInCatalog && !('hidden' in override && override.hidden);
       })
-      .map(([key, override]) => override as LineaCatalogEntry);
+      .map(([, override]) => override as LineaCatalogEntry);
 
     return [...catalogEntries, ...newEntries];
   }, [overrides]);
@@ -309,7 +298,7 @@ export default function InfoLineasPage() {
         window.removeEventListener('resize', handleScrollIndicators);
       };
     }
-  }, [filtered]);
+  }, [filtered, handleScrollIndicators, tableContainerRef]);
 
 
 
@@ -464,7 +453,8 @@ export default function InfoLineasPage() {
                     }
                     if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
                       const next: OverridesMap = { ...overrides };
-                      next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
+                      const foundEntry = LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace);
+                      next[e.claveEnlace] = { ...foundEntry, hidden: true };
                       saveOverrides(next);
                       setOverrides(next);
                       showToast('Registro eliminado localmente', 'success');
@@ -577,7 +567,8 @@ export default function InfoLineasPage() {
                         }
                         if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
                           const next: OverridesMap = { ...overrides };
-                          next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
+                          const foundEntry = LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace);
+                          next[e.claveEnlace] = { ...foundEntry, hidden: true };
                           saveOverrides(next);
                           setOverrides(next);
                           showToast('Registro eliminado localmente', 'success');

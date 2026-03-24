@@ -17,10 +17,10 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useSidebar() {
+export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
     throw new Error('useSidebar must be used within SidebarProvider');
   }
   return context;
-}
+};

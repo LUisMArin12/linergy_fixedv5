@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Filter, Download, Calendar, User, Activity, FileText } from 'lucide-react';
+import { Search, Filter, Download, Calendar, User, Activity } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
-import Badge from '../components/ui/Badge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,7 +17,7 @@ interface AuditLog {
   action: string;
   entity_type: string;
   entity_id: string | null;
-  details: any;
+  details: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -145,9 +144,6 @@ export default function AdminAuditPage() {
     showToast('Reporte exportado correctamente', 'success');
   };
 
-  const handleExportPDF = () => {
-    showToast('Exportación a PDF próximamente', 'info');
-  };
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -218,7 +214,7 @@ export default function AdminAuditPage() {
                 onChange={(e) => setSelectedUser(e.target.value)}
                 options={[
                   { value: '', label: 'Todos los usuarios' },
-                  ...users.map((u: any) => ({
+                  ...users.map((u) => ({
                     value: u.id,
                     label: `${u.nombre || u.email}`,
                   })),
