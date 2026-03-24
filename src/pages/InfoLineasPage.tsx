@@ -229,19 +229,6 @@ export default function InfoLineasPage() {
     showToast('Registro restablecido a valores originales', 'success');
   };
 
-  const handleDeleteRow = () => {
-    if (!editing) return;
-    if (!confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
-      return;
-    }
-    const next: OverridesMap = { ...overrides };
-    next[editing.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === editing.claveEnlace), hidden: true } as any;
-    saveOverrides(next);
-    setOverrides(next);
-    closeEdit();
-    showToast('Registro eliminado localmente', 'success');
-  };
-
   const handleImportCSV = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -310,14 +297,9 @@ export default function InfoLineasPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-2">
-            <div className="flex gap-2">
-              <Button variant="secondary" onClick={handleResetRow} icon={<X className="w-4 h-4" />}>
-                Restablecer
-              </Button>
-              <Button variant="secondary" onClick={handleDeleteRow} icon={<Trash2 className="w-4 h-4" />}>
-                Eliminar
-              </Button>
-            </div>
+            <Button variant="secondary" onClick={handleResetRow} icon={<X className="w-4 h-4" />}>
+              Restablecer
+            </Button>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={closeEdit}>Cancelar</Button>
               <Button onClick={handleSave}>Guardar cambios</Button>
@@ -389,6 +371,23 @@ export default function InfoLineasPage() {
                 >
                   <Pencil className="w-4 h-4 text-[#111827]" />
                 </button>
+                <button
+                  type="button"
+                  className="p-2 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                  onClick={() => {
+                    if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
+                      const next: OverridesMap = { ...overrides };
+                      next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
+                      saveOverrides(next);
+                      setOverrides(next);
+                      showToast('Registro eliminado localmente', 'success');
+                    }
+                  }}
+                  aria-label="Eliminar"
+                  title="Eliminar"
+                >
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                </button>
               </div>
             </div>
 
@@ -452,14 +451,33 @@ export default function InfoLineasPage() {
                     <td className="py-3 px-4 whitespace-nowrap">{e.pob}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{e.ent}</td>
                     <td className="py-3 px-4 text-right">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB]"
-                        onClick={() => openEdit(e)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                        <span className="text-xs font-medium">Editar</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                          onClick={() => openEdit(e)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                          <span className="text-xs font-medium">Editar</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="p-2 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                          onClick={() => {
+                            if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
+                              const next: OverridesMap = { ...overrides };
+                              next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
+                              saveOverrides(next);
+                              setOverrides(next);
+                              showToast('Registro eliminado localmente', 'success');
+                            }
+                          }}
+                          aria-label="Eliminar"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
