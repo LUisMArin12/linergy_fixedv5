@@ -1,9 +1,8 @@
 // src/pages/MapPage.tsx
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useSearchParams, useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MapFilters, { FilterState } from '../components/map/MapFilters';
 import ItemsList from '../components/map/ItemsList';
 import LeafletMap from '../components/map/LeafletMap';
@@ -14,7 +13,6 @@ import WelcomeMessage from '../components/ui/WelcomeMessage';
 import { supabase, Linea, Estructura, Falla } from '../lib/supabase';
 import { useSearch } from '../contexts/SearchContext';
 import { useAuth } from '../contexts/AuthContext';
-import { useSidebar } from '../contexts/SidebarContext';
 
 type DecodedState = {
   filtros?: Partial<FilterState>;
@@ -43,7 +41,6 @@ export default function MapPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { searchQuery } = useSearch();
   const { profile } = useAuth();
-  const { isMapSidebarCollapsed } = useSidebar();
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -307,7 +304,6 @@ export default function MapPage() {
       {showWelcome && <WelcomeMessage userName={profile?.email?.split('@')[0]} />}
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[calc(100dvh-8rem)] min-h-0">
-      {!isMapSidebarCollapsed && (
         <div className="w-full lg:w-80 flex flex-col min-h-0">
           <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] space-y-4">
             {!focusedLineId && <MapFilters onFiltersChange={setFilters} />}
@@ -324,7 +320,6 @@ export default function MapPage() {
             />
           </div>
         </div>
-      )}
 
       <div className="flex-1 relative z-0 min-h-[50vh]">
         {/* ✅ Evita crash si lineId no existe / no match */}
