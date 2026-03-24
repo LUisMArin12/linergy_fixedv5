@@ -256,8 +256,8 @@ Responsabilidades:
 Archivo `.env`:
 
 ```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
+VITE_SUPABASE_URL=https://dqbjfhtbjztncctwlsii.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxYmpmaHRianp0bmNjdHdsc2lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTc3ODQsImV4cCI6MjA4OTg3Mzc4NH0.4A4FgYx2vdElBS5FLVhhoEMZToqp0PE8SH2_yGn1JBI
 ```
 
 ---
