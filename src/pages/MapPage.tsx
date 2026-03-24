@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { FilterState } from '../components/map/MapFilters';
+import MapFilters, { FilterState } from '../components/map/MapFilters';
 import ItemsList from '../components/map/ItemsList';
 import LeafletMap from '../components/map/LeafletMap';
 import MapLegend from '../components/map/MapLegend';
@@ -309,7 +309,9 @@ export default function MapPage() {
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[calc(100dvh-8rem)] min-h-0">
       {!isMapSidebarCollapsed && (
         <div className="w-full lg:w-80 flex flex-col min-h-0">
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch]">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] space-y-4">
+            {!focusedLineId && <MapFilters onFiltersChange={setFilters} />}
+
             <ItemsList
               estructuras={filteredEstructuras}
               fallas={filteredFallas}
