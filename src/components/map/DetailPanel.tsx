@@ -337,14 +337,25 @@ export default function DetailPanel({ item, type, onClose, onCenterMap }: Detail
 
                 {isAdmin && (
                   <>
-                    <Button
-                      variant="primary"
-                      icon={<Edit2 className="w-4 h-4" />}
-                      onClick={() => setShowEditModal(true)}
-                      className="w-full"
-                    >
-                      Editar falla
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        icon={<Edit2 className="w-4 h-4" />}
+                        onClick={() => setShowEditModal(true)}
+                        className="flex-1"
+                      >
+                        Editar falla
+                      </Button>
+
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="p-3 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                        aria-label="Eliminar falla"
+                        title="Eliminar falla"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </button>
+                    </div>
 
                     <Button
                       variant="secondary"
@@ -377,17 +388,6 @@ export default function DetailPanel({ item, type, onClose, onCenterMap }: Detail
                 >
                   Navegar
                 </Button>
-
-                {isAdmin && (
-                  <Button
-                    variant="secondary"
-                    icon={<Trash2 className="w-4 h-4" />}
-                    onClick={() => setShowDeleteModal(true)}
-                    className="w-full text-red-600 hover:bg-red-50"
-                  >
-                    Eliminar falla
-                  </Button>
-                )}
               </div>
             </div>
           )}
