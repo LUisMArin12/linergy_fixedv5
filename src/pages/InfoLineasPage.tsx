@@ -437,8 +437,7 @@ export default function InfoLineasPage() {
       </div>
 
       {/* Desktop: table */}
-      <div className="hidden md:block overflow-x-auto">
-        <div className="bg-white rounded-xl border border-[#E5E7EB] inline-block min-w-full">
+      <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-x-auto">
         <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
           <thead>
             <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
@@ -509,7 +508,6 @@ export default function InfoLineasPage() {
             ))}
           </tbody>
         </table>
-        </div>
       </div>
     </div>
   );
