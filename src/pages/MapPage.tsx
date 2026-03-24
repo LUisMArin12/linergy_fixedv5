@@ -308,8 +308,10 @@ export default function MapPage() {
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[calc(100dvh-8rem)] min-h-0">
       {!isMapSidebarCollapsed && (
-        <div className="w-full lg:w-80 flex flex-col min-h-0 gap-4">
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch]">
+        <div className="w-full lg:w-80 flex flex-col min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] space-y-4">
+            {!focusedLineId && <MapFilters onFiltersChange={setFilters} />}
+
             <ItemsList
               estructuras={filteredEstructuras}
               fallas={filteredFallas}
@@ -321,11 +323,6 @@ export default function MapPage() {
               onSelectLinea={handleSelectLinea}
             />
           </div>
-          {!focusedLineId && (
-            <div className="flex-shrink-0">
-              <MapFilters onFiltersChange={setFilters} />
-            </div>
-          )}
         </div>
       )}
 
