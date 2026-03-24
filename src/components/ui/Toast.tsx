@@ -22,7 +22,7 @@ function ToastItem({
   message,
   type,
   onRemove,
-  duration = 4000
+  duration = 2000
 }: ToastMessage & { onRemove: (id: string) => void; duration?: number }) {
   useEffect(() => {
     const timer = setTimeout(() => onRemove(id), duration);
