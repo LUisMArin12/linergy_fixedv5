@@ -8,6 +8,7 @@ import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
 import { useToast } from '../contexts/ToastContext';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 type UserWithProfile = {
   id: string;
@@ -22,6 +23,7 @@ export default function AdminUsersPage() {
   const queryClient = useQueryClient();
   const [roleChanges, setRoleChanges] = useState<Record<string, 'admin' | 'user'>>({});
   const [userToDelete, setUserToDelete] = useState<UserWithProfile | null>(null);
+  const tableRef = useDragScroll<HTMLDivElement>();
 
   const { data: users, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-users'],
@@ -149,7 +151,7 @@ export default function AdminUsersPage() {
         </div>
 
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          <div ref={tableRef} className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>

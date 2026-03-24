@@ -9,6 +9,7 @@ import { useSearch } from '../contexts/SearchContext';
 import { useToast } from '../contexts/ToastContext';
 import { supabase } from '../lib/supabase';
 import { LINEAS_CATALOG, type LineaCatalogEntry } from '../lib/lineaCatalog';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 type OverridesMap = Record<string, Partial<LineaCatalogEntry>>;
 
@@ -96,7 +97,7 @@ export default function InfoLineasPage() {
   const [form, setForm] = useState<EditFormState | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const tableContainerRef = useDragScroll<HTMLDivElement>();
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
 

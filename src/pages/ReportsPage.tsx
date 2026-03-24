@@ -14,6 +14,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import FaultReportModal from '../components/modals/FaultReportModal';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 const estadoLabel: Record<string, string> = {
   ABIERTA: 'Abierta',
@@ -40,6 +41,7 @@ export default function ReportsPage() {
   const { showToast } = useToast();
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const tableRef = useDragScroll<HTMLDivElement>();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLinea, setSelectedLinea] = useState('');
@@ -360,7 +362,7 @@ export default function ReportsPage() {
           </div>
 
           <Card className="overflow-hidden hidden md:block">
-            <div className="overflow-x-auto">
+            <div ref={tableRef} className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-[#F7FAF8] border-b border-[#E5E7EB]">
                   <tr>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Edit, Trash2 } from 'lucide-react';
+import { Search, CreditCard as Edit, Trash2 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
@@ -8,6 +8,7 @@ import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import Input from '../components/ui/Input';
 import Chip from '../components/ui/Chip';
 import { supabase, Linea } from '../lib/supabase';
+import { useDragScroll } from '../hooks/useDragScroll';
 
 type ClassificationFilter = 'ALL' | Linea['clasificacion'];
 
@@ -24,6 +25,7 @@ function parseNullableNumber(raw: string): number | null {
 
 export default function AdminLinesPage() {
   const queryClient = useQueryClient();
+  const tableRef = useDragScroll<HTMLDivElement>();
 
   // Texto y filtros
   const [searchQuery, setSearchQuery] = useState('');
@@ -249,7 +251,7 @@ export default function AdminLinesPage() {
               </div>
 
               {/* Tablet/Desktop: table */}
-              <div className="hidden md:block overflow-x-auto">
+              <div ref={tableRef} className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-[#E5E7EB]">
