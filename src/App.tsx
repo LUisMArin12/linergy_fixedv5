@@ -13,7 +13,6 @@ const FallasPage = lazy(() => import('./pages/FallasPage'));
 const AdminLinesPage = lazy(() => import('./pages/AdminLinesPage'));
 const AdminImportPage = lazy(() => import('./pages/AdminImportPage'));
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
-const AdminAuditPage = lazy(() => import('./pages/AdminAuditPage'));
 const InfoLineasPage = lazy(() => import('./pages/InfoLineasPage'));
 
 import RegisterFaultModal from './components/modals/RegisterFaultModal';
@@ -73,14 +72,6 @@ export default function App() {
                   element={
                     <ProtectedRoute requireAdmin>
                       <AdminUsersPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="admin/auditoria"
-                  element={
-                    <ProtectedRoute>
-                      <AdminAuditPage />
                     </ProtectedRoute>
                   }
                 />

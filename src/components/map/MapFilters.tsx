@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Chip from '../ui/Chip';
 import Badge from '../ui/Badge';
-import { Filter, ChevronDown, X } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 import { Classification, FaultStatus } from '../../types';
 
 export interface FilterState {
@@ -18,7 +18,7 @@ interface MapFiltersProps {
 }
 
 export default function MapFilters({ onFiltersChange, initialShowFaults = true }: MapFiltersProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const [filters, setFilters] = useState<FilterState>({
     classifications: [],
@@ -26,7 +26,6 @@ export default function MapFilters({ onFiltersChange, initialShowFaults = true }
     showFaults: initialShowFaults,
   });
 
-  // ✅ Notificar al padre DESPUÉS del render (evita warning)
   useEffect(() => {
     onFiltersChange(filters);
   }, [filters, onFiltersChange]);
@@ -62,11 +61,11 @@ export default function MapFilters({ onFiltersChange, initialShowFaults = true }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden flex flex-col-reverse">
+    <div className="relative">
       <button
         type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 flex items-center justify-between hover:bg-[#F7FAF8] transition-colors"
+        onClick={() => setIsVisible(!isVisible)}
+        className="w-full bg-white rounded-xl border border-[#E5E7EB] shadow-sm p-4 flex items-center justify-between hover:bg-[#F7FAF8] transition-all hover:shadow-md"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-[#DDF3EA] rounded-lg flex items-center justify-center">
@@ -80,25 +79,21 @@ export default function MapFilters({ onFiltersChange, initialShowFaults = true }
                 <Badge className="bg-[#157A5A] text-white border-[#157A5A]">{activeFiltersCount}</Badge>
               )}
             </div>
-
-            <p className="text-xs text-[#6B7280]">{isExpanded ? 'Contraer filtros' : 'Expandir filtros'}</p>
+            <p className="text-xs text-[#6B7280]">Toca para {isVisible ? 'ocultar' : 'mostrar'}</p>
           </div>
         </div>
-
-        <ChevronDown className={`w-5 h-5 text-[#6B7280] transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
-        {isExpanded && (
+        {isVisible && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="border-b border-[#E5E7EB] overflow-hidden order-first"
+            className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl border border-[#E5E7EB] shadow-lg overflow-hidden z-10"
           >
-            {/* ✅ SIN scroll interno: el scroll lo hace el panel izquierdo (MapPage) */}
-            <div className="p-4 pb-4 space-y-4">
+            <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
               {activeFiltersCount > 0 && (
                 <button
                   type="button"
@@ -165,9 +160,6 @@ export default function MapFilters({ onFiltersChange, initialShowFaults = true }
                   </label>
                 </div>
               </div>
-
-              {/* ✅ pequeño colchón para móviles */}
-              <div className="h-2" />
             </div>
           </motion.div>
         )}

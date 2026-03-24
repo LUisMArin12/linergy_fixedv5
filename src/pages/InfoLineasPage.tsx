@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Pencil, X, Download, Upload } from 'lucide-react';
+import { Search, Pencil, X, Download, Upload, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
@@ -113,7 +113,7 @@ export default function InfoLineasPage() {
   }, []);
 
   const mergedCatalog = useMemo(() => {
-    return LINEAS_CATALOG.map((e) => mergeEntry(e, overrides));
+    return LINEAS_CATALOG.map((e) => mergeEntry(e, overrides)).filter((e: any) => !e.hidden);
   }, [overrides]);
 
   const filtered = useMemo(() => {
@@ -162,30 +162,61 @@ export default function InfoLineasPage() {
   };
 
   const handleExportCSV = () => {
-    const headers = ['ID', 'Número', 'Nombre', 'Clasificación', 'Longitud (km)'];
-    const rows = lineasDB.map((linea: any) => [
-      linea.id,
+    const headers = [
+      'Clave Enlace',
+      'Número',
+      'Descripción',
+      'Área',
+      'Tensión',
+      'Kms',
+      'NC',
+      'Conductor',
+      'Tipo Estructura',
+      'Num Estructuras',
+      'Año',
+      'Comp',
+      'Cve SAP',
+      'Brecha',
+      'Conf Cond',
+      'POB',
+      'ENT'
+    ];
+
+    const rows = filtered.map((linea) => [
+      linea.claveEnlace,
       linea.numero,
-      linea.nombre || '',
-      linea.clasificacion,
-      linea.longitud_km || '',
+      linea.descripcion,
+      linea.area,
+      linea.tension,
+      linea.kms ?? '',
+      linea.nc ?? '',
+      linea.conductor,
+      linea.tipoEstructura,
+      linea.numEstructuras ?? '',
+      linea.anio ?? '',
+      linea.comp,
+      linea.cveSap,
+      linea.brecha ?? '',
+      linea.confCond,
+      linea.pob,
+      linea.ent
     ]);
 
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lineas_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `lineas_completo_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('CSV exportado correctamente', 'success');
+    showToast(`${filtered.length} registros exportados correctamente`, 'success');
   };
 
   const handleResetRow = () => {
@@ -195,6 +226,20 @@ export default function InfoLineasPage() {
     saveOverrides(next);
     setOverrides(next);
     closeEdit();
+    showToast('Registro restablecido a valores originales', 'success');
+  };
+
+  const handleDeleteRow = () => {
+    if (!editing) return;
+    if (!confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    const next: OverridesMap = { ...overrides };
+    next[editing.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === editing.claveEnlace), hidden: true } as any;
+    saveOverrides(next);
+    setOverrides(next);
+    closeEdit();
+    showToast('Registro eliminado localmente', 'success');
   };
 
   const handleImportCSV = () => {
@@ -265,9 +310,14 @@ export default function InfoLineasPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-2">
-            <Button variant="secondary" onClick={handleResetRow} icon={<X className="w-4 h-4" />}>
-              Restablecer registro
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={handleResetRow} icon={<X className="w-4 h-4" />}>
+                Restablecer
+              </Button>
+              <Button variant="secondary" onClick={handleDeleteRow} icon={<Trash2 className="w-4 h-4" />}>
+                Eliminar
+              </Button>
+            </div>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={closeEdit}>Cancelar</Button>
               <Button onClick={handleSave}>Guardar cambios</Button>
