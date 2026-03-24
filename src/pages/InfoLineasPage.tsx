@@ -161,28 +161,6 @@ export default function InfoLineasPage() {
     closeEdit();
   };
 
-  const handleExport = () => {
-    const exportData = lineasDB.map((linea: any) => ({
-      id: linea.id,
-      numero: linea.numero,
-      nombre: linea.nombre,
-      clasificacion: linea.clasificacion,
-      longitud_km: linea.longitud_km,
-      metadata: linea.metadata,
-    }));
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `lineas_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Datos exportados correctamente', 'success');
-  };
-
   const handleExportCSV = () => {
     const headers = ['ID', 'Número', 'Nombre', 'Clasificación', 'Longitud (km)'];
     const rows = lineasDB.map((linea: any) => [
@@ -217,31 +195,6 @@ export default function InfoLineasPage() {
     saveOverrides(next);
     setOverrides(next);
     closeEdit();
-  };
-
-  const handleImportJSON = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-
-        if (!Array.isArray(data)) {
-          showToast('El archivo debe contener un array de líneas', 'error');
-          return;
-        }
-
-        showToast(`Importación de JSON completada (${data.length} registros)`, 'success');
-      } catch (error) {
-        showToast('Error al leer el archivo JSON', 'error');
-      }
-    };
-    input.click();
   };
 
   const handleImportCSV = () => {
@@ -335,23 +288,9 @@ export default function InfoLineasPage() {
           <Button
             variant="secondary"
             icon={<Upload className="w-4 h-4" />}
-            onClick={handleImportJSON}
-          >
-            Importar JSON
-          </Button>
-          <Button
-            variant="secondary"
-            icon={<Upload className="w-4 h-4" />}
             onClick={handleImportCSV}
           >
             Importar CSV
-          </Button>
-          <Button
-            variant="secondary"
-            icon={<Download className="w-4 h-4" />}
-            onClick={handleExport}
-          >
-            Exportar JSON
           </Button>
           <Button
             variant="secondary"

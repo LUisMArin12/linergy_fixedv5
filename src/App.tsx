@@ -79,7 +79,7 @@ export default function App() {
                 <Route
                   path="admin/auditoria"
                   element={
-                    <ProtectedRoute requireAdmin>
+                    <ProtectedRoute>
                       <AdminAuditPage />
                     </ProtectedRoute>
                   }

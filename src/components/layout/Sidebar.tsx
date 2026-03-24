@@ -28,7 +28,7 @@ const menuItems = [
       { to: '/dashboard/admin/lineas', icon: Cable, label: 'Líneas', adminOnly: true },
       { to: '/dashboard/admin/importar', icon: UploadCloud, label: 'Importar KMZ', adminOnly: true },
       { to: '/dashboard/admin/usuarios', icon: Users, label: 'Usuarios', adminOnly: true },
-      { to: '/dashboard/admin/auditoria', icon: Activity, label: 'Auditoría', adminOnly: true },
+      { to: '/dashboard/admin/auditoria', icon: Activity, label: 'Mi Actividad', adminOnly: false },
     ],
   },
 ];

@@ -62,7 +62,7 @@ export default function MapFilters({ onFiltersChange, initialShowFaults = true }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden flex flex-col-reverse">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -95,7 +95,7 @@ export default function MapFilters({ onFiltersChange, initialShowFaults = true }
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="border-t border-[#E5E7EB] overflow-hidden"
+            className="border-b border-[#E5E7EB] overflow-hidden order-first"
           >
             {/* ✅ SIN scroll interno: el scroll lo hace el panel izquierdo (MapPage) */}
             <div className="p-4 pb-4 space-y-4">

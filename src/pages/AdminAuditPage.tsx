@@ -8,6 +8,7 @@ import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AuditLog {
   id: string;
@@ -41,6 +42,7 @@ const actionColors: Record<string, string> = {
 
 export default function AdminAuditPage() {
   const { showToast } = useToast();
+  const { isAdmin, profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
@@ -52,6 +54,7 @@ export default function AdminAuditPage() {
   const { data: users = [] } = useQuery({
     queryKey: ['audit_users'],
     queryFn: async () => {
+      if (!isAdmin) return [];
       const { data, error } = await supabase
         .from('profiles')
         .select('id, nombre, email')
@@ -59,13 +62,14 @@ export default function AdminAuditPage() {
       if (error) throw error;
       return data || [];
     },
+    enabled: isAdmin,
   });
 
   const { data: allLogs = [], isLoading } = useQuery({
-    queryKey: ['audit_logs'],
+    queryKey: ['audit_logs', profile?.id, isAdmin],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_audit_logs', {
-        p_user_id: null,
+        p_user_id: isAdmin ? null : profile?.id || null,
         p_start_date: null,
         p_end_date: null,
         p_entity_type: null,
@@ -168,9 +172,13 @@ export default function AdminAuditPage() {
     <div className="space-y-6 max-w-7xl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]">Auditoría del Sistema</h1>
+          <h1 className="text-2xl font-bold text-[#111827]">
+            {isAdmin ? 'Auditoría del Sistema' : 'Mi Actividad'}
+          </h1>
           <p className="text-sm text-[#6B7280] mt-1">
-            Historial completo de actividades y acciones de usuarios
+            {isAdmin
+              ? 'Historial completo de actividades y acciones de usuarios'
+              : 'Historial de tus actividades en el sistema'}
           </p>
         </div>
 
@@ -198,23 +206,25 @@ export default function AdminAuditPage() {
             <Input
               label="Buscar"
               icon={<Search className="w-4 h-4" />}
-              placeholder="Usuario, email, tipo..."
+              placeholder="Buscar en acciones..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
 
-            <Select
-              label="Usuario"
-              value={selectedUser}
-              onChange={(e) => setSelectedUser(e.target.value)}
-              options={[
-                { value: '', label: 'Todos los usuarios' },
-                ...users.map((u: any) => ({
-                  value: u.id,
-                  label: `${u.nombre || u.email}`,
-                })),
-              ]}
-            />
+            {isAdmin && (
+              <Select
+                label="Usuario"
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value)}
+                options={[
+                  { value: '', label: 'Todos los usuarios' },
+                  ...users.map((u: any) => ({
+                    value: u.id,
+                    label: `${u.nombre || u.email}`,
+                  })),
+                ]}
+              />
+            )}
 
             <Select
               label="Acción"
