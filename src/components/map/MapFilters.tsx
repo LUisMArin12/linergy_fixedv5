@@ -14,16 +14,16 @@ export interface FilterState {
 
 interface MapFiltersProps {
   onFiltersChange: (filters: FilterState) => void;
+  initialShowFaults?: boolean;
 }
 
-export default function MapFilters({ onFiltersChange }: MapFiltersProps) {
+export default function MapFilters({ onFiltersChange, initialShowFaults = true }: MapFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // ✅ Default: NO visibles hasta que el usuario lo active
   const [filters, setFilters] = useState<FilterState>({
     classifications: [],
-    statuses: [],
-    showFaults: false,
+    statuses: ['Abierta', 'En atención'],
+    showFaults: initialShowFaults,
   });
 
   // ✅ Notificar al padre DESPUÉS del render (evita warning)

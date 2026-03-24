@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, FileText, Info, Cable, UploadCloud, LogOut, X, Users, AlertTriangle } from 'lucide-react';
+import { Map, FileText, Info, Cable, UploadCloud, LogOut, X, Users, AlertTriangle, Activity } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -28,6 +28,7 @@ const menuItems = [
       { to: '/dashboard/admin/lineas', icon: Cable, label: 'Líneas', adminOnly: true },
       { to: '/dashboard/admin/importar', icon: UploadCloud, label: 'Importar KMZ', adminOnly: true },
       { to: '/dashboard/admin/usuarios', icon: Users, label: 'Usuarios', adminOnly: true },
+      { to: '/dashboard/admin/auditoria', icon: Activity, label: 'Auditoría', adminOnly: true },
     ],
   },
 ];

@@ -13,6 +13,7 @@ import { generateFaultPDF, copyFaultText } from '../lib/reportUtils';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import FaultReportModal from '../components/modals/FaultReportModal';
+import EditableReportPreviewModal from '../components/modals/EditableReportPreviewModal';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 
 const estadoLabel: Record<string, string> = {
@@ -324,16 +325,37 @@ export default function ReportsPage() {
 
                   <div className="mt-4 flex items-center justify-end gap-2">
                     <button
-                      onClick={() => setSelectedReporte(reporte)}
+                      onClick={() => {
+                        const geom = parseGeometry(reporte.geom);
+                        const coords = geom && geom.type === 'Point' ? { lat: geom.coordinates[1], lon: geom.coordinates[0] } : { lat: null, lon: null };
+
+                        setSelectedReporte({
+                          ...reporte,
+                          faultData: {
+                            lat: coords.lat,
+                            lon: coords.lon,
+                            hasValidCoords: coords.lat !== null && coords.lon !== null,
+                            fallaId: reporte.id,
+                            lineaNumero: linea?.numero || '',
+                            lineaNombre: linea?.nombre || '',
+                            km: reporte.km,
+                            tipo: reporte.tipo || '',
+                            fecha: new Date(reporte.ocurrencia_ts).toISOString().split('T')[0],
+                            hora: new Date(reporte.ocurrencia_ts).toTimeString().slice(0, 5),
+                            descripcion: reporte.descripcion || '',
+                            estado: estadoLabel[reporte.estado] || reporte.estado,
+                          }
+                        } as any);
+                      }}
                       className="p-2 hover:bg-[#DDF3EA] rounded-lg transition-colors"
-                      title="Ver detalle"
+                      title="Vista previa editable"
                     >
                       <Eye className="w-4 h-4 text-[#6B7280]" />
                     </button>
                     <button
                       onClick={() => handleExportPDF(reporte)}
                       className="p-2 hover:bg-[#DDF3EA] rounded-lg transition-colors"
-                      title="Exportar PDF"
+                      title="Exportar PDF directo"
                     >
                       <Download className="w-4 h-4 text-[#6B7280]" />
                     </button>
@@ -473,10 +495,21 @@ export default function ReportsPage() {
 
       {selectedReporte &&
         (() => {
+          const reporteAny = selectedReporte as any;
+          if (reporteAny.faultData) {
+            return (
+              <EditableReportPreviewModal
+                isOpen={true}
+                onClose={() => setSelectedReporte(null)}
+                faultData={reporteAny.faultData}
+              />
+            );
+          }
+
           const linea = lineas.find((l) => l.id === selectedReporte.linea_id) ?? null;
 
           const geom = parseGeometry(selectedReporte.geom);
-          const coords = geom && geom.type === 'Point' ? geom.coordinates : null; // [lon, lat]
+          const coords = geom && geom.type === 'Point' ? geom.coordinates : null;
 
           const lonRaw = coords ? coords[0] : null;
           const latRaw = coords ? coords[1] : null;

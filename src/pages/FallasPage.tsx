@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Filter, Edit2, Trash2, MapPin, AlertCircle, Calendar, FileText, X } from 'lucide-react';
+import { Search, Filter, CreditCard as Edit2, Trash2, MapPin, AlertCircle, Calendar, FileText, X } from 'lucide-react';
 import { supabase, Falla, deleteFalla } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,7 +93,7 @@ export default function FallasPage() {
   };
 
   const handleViewOnMap = (falla: Falla & { lineas: { numero: string; nombre: string | null } }) => {
-    navigate(`/dashboard/mapa?faultId=${falla.id}`);
+    navigate(`/dashboard/mapa?faultId=${falla.id}&lineId=${falla.linea_id}&showClosed=true`);
   };
 
   const getEstadoBadgeVariant = (estado: string) => {

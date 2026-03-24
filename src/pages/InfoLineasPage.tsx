@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Pencil, X } from 'lucide-react';
+import { Search, Pencil, X, Download, Upload } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useSearch } from '../contexts/SearchContext';
+import { useToast } from '../contexts/ToastContext';
+import { supabase } from '../lib/supabase';
 import { LINEAS_CATALOG, type LineaCatalogEntry } from '../lib/lineaCatalog';
 
 type OverridesMap = Record<string, Partial<LineaCatalogEntry>>;
@@ -87,10 +90,23 @@ function toNumberOrNull(v: string): number | null {
 
 export default function InfoLineasPage() {
   const { searchQuery, setSearchQuery } = useSearch();
+  const { showToast } = useToast();
 
   const [overrides, setOverrides] = useState<OverridesMap>({});
   const [editing, setEditing] = useState<LineaCatalogEntry | null>(null);
   const [form, setForm] = useState<EditFormState | null>(null);
+
+  const { data: lineasDB = [] } = useQuery({
+    queryKey: ['lineas_db'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lineas')
+        .select('*')
+        .order('numero');
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   useEffect(() => {
     setOverrides(loadOverrides());
@@ -121,7 +137,6 @@ export default function InfoLineasPage() {
 
     const next: OverridesMap = { ...overrides };
 
-    // Guardamos override por claveEnlace
     next[editing.claveEnlace] = {
       claveEnlace: form.claveEnlace,
       descripcion: form.descripcion,
@@ -141,11 +156,58 @@ export default function InfoLineasPage() {
       ent: form.ent,
     };
 
-    // Nota: 'numero' no se edita (derivado de clave), pero si cambias clave manualmente
-    // no se recalcula; mantenemos el número original.
     saveOverrides(next);
     setOverrides(next);
     closeEdit();
+  };
+
+  const handleExport = () => {
+    const exportData = lineasDB.map((linea: any) => ({
+      id: linea.id,
+      numero: linea.numero,
+      nombre: linea.nombre,
+      clasificacion: linea.clasificacion,
+      longitud_km: linea.longitud_km,
+      metadata: linea.metadata,
+    }));
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lineas_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Datos exportados correctamente', 'success');
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Número', 'Nombre', 'Clasificación', 'Longitud (km)'];
+    const rows = lineasDB.map((linea: any) => [
+      linea.id,
+      linea.numero,
+      linea.nombre || '',
+      linea.clasificacion,
+      linea.longitud_km || '',
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lineas_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('CSV exportado correctamente', 'success');
   };
 
   const handleResetRow = () => {
@@ -212,14 +274,30 @@ export default function InfoLineasPage() {
       )}
     </Modal>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#111827]">Información Líneas</h1>
           <p className="text-sm text-[#6B7280] mt-1">
             Catálogo técnico. Puedes editar registros (se guardan localmente en este navegador).
           </p>
         </div>
-        <div className="text-sm text-[#6B7280]">Registros: {filtered.length}</div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            icon={<Download className="w-4 h-4" />}
+            onClick={handleExport}
+          >
+            Exportar JSON
+          </Button>
+          <Button
+            variant="secondary"
+            icon={<Download className="w-4 h-4" />}
+            onClick={handleExportCSV}
+          >
+            Exportar CSV
+          </Button>
+          <div className="text-sm text-[#6B7280]">Registros: {filtered.length}</div>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-[#E5E7EB] p-4">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { MapPin, FileText, AlertCircle } from 'lucide-react';
+import { MapPin, FileText, AlertCircle, Target } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Input from '../ui/Input';
 import SearchableSelect from '../ui/SearchableSelect';
@@ -57,6 +57,7 @@ export default function RegisterFaultModal() {
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [result, setResult] = useState<FaultResult | null>(null);
+  const [previewLocation, setPreviewLocation] = useState<{ lat: number; lon: number } | null>(null);
 
   const buildInitialFormData = useCallback((lineaId?: string | null): FaultFormData => {
     const now = new Date();
@@ -232,6 +233,28 @@ export default function RegisterFaultModal() {
     setResult(null);
   };
 
+  const handleCenterMap = useCallback(async () => {
+    if (!formData.lineaId || formData.km === null) {
+      showToast('Selecciona una línea e ingresa un kilómetro', 'error');
+      return;
+    }
+
+    try {
+      const kmRounded = roundToMillis(formData.km);
+      const location = await computeFaultLocation(formData.lineaId, kmRounded);
+      setPreviewLocation({ lat: location.lat, lon: location.lon });
+
+      const mapEvent = new CustomEvent('centerMapAt', {
+        detail: { lat: location.lat, lon: location.lon, zoom: 16 }
+      });
+      window.dispatchEvent(mapEvent);
+
+      showToast('Mapa centrado en la ubicación', 'success');
+    } catch (error) {
+      showToast('Error al calcular ubicación', 'error');
+    }
+  }, [formData.lineaId, formData.km, showToast]);
+
   if (!isAdmin && isRegisterFaultOpen) {
     return (
       <Modal isOpen={isRegisterFaultOpen} onClose={handleClose} title="Acceso Denegado" size="md">
@@ -284,20 +307,32 @@ export default function RegisterFaultModal() {
             />
           )}
 
-          <Input
-            label="Kilómetro"
-            icon={<MapPin className="w-4 h-4" />}
-            placeholder="12.345"
-            type="number"
-            step="0.001"
-            min="0"
-            value={formData.km ?? ''}
-            onChange={(e) => {
-              const v = e.target.value;
-              setFormData({ ...formData, km: v === '' ? null : roundToMillis(Number(v)) });
-            }}
-            required
-          />
+          <div className="space-y-2">
+            <Input
+              label="Kilómetro"
+              icon={<MapPin className="w-4 h-4" />}
+              placeholder="12.345"
+              type="number"
+              step="0.001"
+              min="0"
+              value={formData.km ?? ''}
+              onChange={(e) => {
+                const v = e.target.value;
+                setFormData({ ...formData, km: v === '' ? null : roundToMillis(Number(v)) });
+              }}
+              required
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCenterMap}
+              disabled={!formData.lineaId || formData.km === null}
+              className="w-full"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Centrar en mapa
+            </Button>
+          </div>
 
           <Input
             label="Tipo de falla"

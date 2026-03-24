@@ -231,12 +231,29 @@ export default function LeafletMap({
     }
   }, [estructuras, fallas, lineas, focusedLineId, onSelectEstructura, onSelectFalla, onSelectLinea]);
 
-  // ✅ Center/zoom externos (ej. “centrar en mapa” desde panel)
+  // ✅ Center/zoom externos (ej. "centrar en mapa" desde panel)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     map.setView(center, zoom);
   }, [center, zoom]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const handleCenterMap = (event: Event) => {
+      const customEvent = event as CustomEvent<{ lat: number; lon: number; zoom: number }>;
+      if (customEvent.detail) {
+        map.flyTo([customEvent.detail.lat, customEvent.detail.lon], customEvent.detail.zoom, {
+          duration: 1.5
+        });
+      }
+    };
+
+    window.addEventListener('centerMapAt', handleCenterMap);
+    return () => window.removeEventListener('centerMapAt', handleCenterMap);
+  }, []);
 
   return (
     <div className="relative w-full h-full">

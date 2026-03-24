@@ -1,8 +1,9 @@
 // src/pages/MapPage.tsx
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MapFilters, { FilterState } from '../components/map/MapFilters';
 import ItemsList from '../components/map/ItemsList';
 import LeafletMap from '../components/map/LeafletMap';
@@ -43,6 +44,7 @@ export default function MapPage() {
   const { profile } = useAuth();
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // ✅ Soporta params nuevos y legacy
   const focusedLineId = searchParams.get('lineId') ?? searchParams.get('lineaId');
@@ -76,11 +78,10 @@ export default function MapPage() {
     [setSearchParams, searchParams]
   );
 
-  // ✅ Default: NO visibles hasta que el usuario lo active
   const defaultFilters: FilterState = {
     classifications: [],
-    statuses: [],
-    showFaults: false,
+    statuses: ['Abierta', 'En atención'],
+    showFaults: true,
   };
 
   const decodedState = useMemo(() => safeDecodeState(searchParams.get('state')), [searchParams]);
@@ -129,12 +130,23 @@ export default function MapPage() {
     },
   });
 
+  const showClosedFaults = searchParams.get('showClosed') === 'true';
+
   const { data: allFallas = [] } = useQuery({
-    queryKey: ['fallas'],
+    queryKey: ['fallas', showClosedFaults],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_fallas_geojson');
-      if (error) throw error;
-      return (data || []) as Falla[];
+      if (showClosedFaults) {
+        const { data, error } = await supabase
+          .from('fallas')
+          .select('*')
+          .is('deleted_at', null);
+        if (error) throw error;
+        return (data || []) as Falla[];
+      } else {
+        const { data, error } = await supabase.rpc('get_fallas_geojson');
+        if (error) throw error;
+        return (data || []) as Falla[];
+      }
     },
   });
 
@@ -293,28 +305,45 @@ export default function MapPage() {
     <>
       {showWelcome && <WelcomeMessage userName={profile?.email?.split('@')[0]} />}
 
-      {/* ✅ dvh: evita cortes por barras del navegador en iOS/Android */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[calc(100dvh-8rem)] min-h-0">
-      {/* Panel izquierdo */}
-      <div className="w-full lg:w-80 flex flex-col min-h-0">
-        {/* ✅ Scroll único para: filtros + resultados (sin scroll anidado) */}
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] space-y-4">
-          {/* Filtros arriba */}
-          {!focusedLineId && <MapFilters onFiltersChange={setFilters} />}
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[calc(100dvh-8rem)] min-h-0 relative">
+      <AnimatePresence mode="wait">
+        {!isSidebarCollapsed && (
+          <motion.div
+            initial={{ x: -320, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -320, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="w-full lg:w-80 flex flex-col min-h-0"
+          >
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] space-y-4">
+              {!focusedLineId && <MapFilters onFiltersChange={setFilters} />}
 
-          {/* Resultados */}
-          <ItemsList
-            estructuras={filteredEstructuras}
-            fallas={filteredFallas}
-            lineas={filteredLineas}
-            showLineas={showLineResults}
-            onToggleLineas={setShowLineResults}
-            onSelectEstructura={handleSelectEstructura}
-            onSelectFalla={handleSelectFalla}
-            onSelectLinea={handleSelectLinea}
-          />
-        </div>
-      </div>
+              <ItemsList
+                estructuras={filteredEstructuras}
+                fallas={filteredFallas}
+                lineas={filteredLineas}
+                showLineas={showLineResults}
+                onToggleLineas={setShowLineResults}
+                onSelectEstructura={handleSelectEstructura}
+                onSelectFalla={handleSelectFalla}
+                onSelectLinea={handleSelectLinea}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-[1000] bg-white border border-[#E5E7EB] rounded-r-lg px-2 py-4 shadow-lg hover:bg-[#F7FAF8] transition-colors"
+        style={{ left: isSidebarCollapsed ? '0' : '320px' }}
+      >
+        {isSidebarCollapsed ? (
+          <ChevronRight className="w-5 h-5 text-[#157A5A]" />
+        ) : (
+          <ChevronLeft className="w-5 h-5 text-[#157A5A]" />
+        )}
+      </button>
 
       <div className="flex-1 relative z-0 min-h-[50vh]">
         {/* ✅ Evita crash si lineId no existe / no match */}
