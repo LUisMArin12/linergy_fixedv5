@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Pencil, X, Download, Upload, Trash2 } from 'lucide-react';
+import { Search, Pencil, X, Download, Upload, Trash2, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
@@ -95,6 +95,7 @@ export default function InfoLineasPage() {
   const [overrides, setOverrides] = useState<OverridesMap>({});
   const [editing, setEditing] = useState<LineaCatalogEntry | null>(null);
   const [form, setForm] = useState<EditFormState | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const { data: lineasDB = [] } = useQuery({
     queryKey: ['lineas_db'],
@@ -113,7 +114,16 @@ export default function InfoLineasPage() {
   }, []);
 
   const mergedCatalog = useMemo(() => {
-    return LINEAS_CATALOG.map((e) => mergeEntry(e, overrides)).filter((e: any) => !e.hidden);
+    const catalogEntries = LINEAS_CATALOG.map((e) => mergeEntry(e, overrides)).filter((e: any) => !e.hidden);
+
+    const newEntries = Object.entries(overrides)
+      .filter(([key, override]) => {
+        const existsInCatalog = LINEAS_CATALOG.some(e => e.claveEnlace === key);
+        return !existsInCatalog && !(override as any).hidden;
+      })
+      .map(([key, override]) => override as LineaCatalogEntry);
+
+    return [...catalogEntries, ...newEntries];
   }, [overrides]);
 
   const filtered = useMemo(() => {
@@ -125,20 +135,53 @@ export default function InfoLineasPage() {
   const openEdit = (e: LineaCatalogEntry) => {
     setEditing(e);
     setForm(toEditState(e));
+    setIsCreating(false);
+  };
+
+  const openCreate = () => {
+    const newEntry: LineaCatalogEntry = {
+      claveEnlace: '',
+      numero: '',
+      descripcion: '',
+      area: '',
+      tension: '',
+      kms: null,
+      nc: null,
+      conductor: '',
+      tipoEstructura: '',
+      numEstructuras: null,
+      anio: null,
+      comp: '',
+      cveSap: '',
+      brecha: null,
+      confCond: '',
+      pob: '',
+      ent: '',
+    };
+    setEditing(newEntry);
+    setForm(toEditState(newEntry));
+    setIsCreating(true);
   };
 
   const closeEdit = () => {
     setEditing(null);
     setForm(null);
+    setIsCreating(false);
   };
 
   const handleSave = () => {
-    if (!editing || !form) return;
+    if (!form) return;
+
+    if (!form.claveEnlace.trim()) {
+      showToast('La clave enlace es requerida', 'error');
+      return;
+    }
 
     const next: OverridesMap = { ...overrides };
 
-    next[editing.claveEnlace] = {
+    const newEntry = {
       claveEnlace: form.claveEnlace,
+      numero: form.claveEnlace,
       descripcion: form.descripcion,
       area: form.area,
       tension: form.tension,
@@ -156,8 +199,11 @@ export default function InfoLineasPage() {
       ent: form.ent,
     };
 
+    next[form.claveEnlace] = newEntry;
+
     saveOverrides(next);
     setOverrides(next);
+    showToast(isCreating ? 'Registro creado correctamente' : 'Registro actualizado correctamente', 'success');
     closeEdit();
   };
 
@@ -257,16 +303,16 @@ export default function InfoLineasPage() {
 
   return (
     <div className="space-y-6">
-    <Modal isOpen={!!editing} onClose={closeEdit} title="Editar información de línea" size="lg">
+    <Modal isOpen={!!editing} onClose={closeEdit} title={isCreating ? "Agregar nueva línea" : "Editar información de línea"} size="lg">
       {!form ? null : (
         <div className="space-y-4">
           <div className="rounded-xl border border-[#E5E7EB] bg-white p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-[#111827]">{editing?.claveEnlace}</p>
+                <p className="text-sm font-semibold text-[#111827]">{isCreating ? 'Nuevo registro' : editing?.claveEnlace}</p>
                 <p className="text-xs text-[#6B7280] mt-1">Cambios se guardan localmente (este equipo/navegador).</p>
               </div>
-              <Badge>{form.tension}</Badge>
+              {form.tension && <Badge>{form.tension}</Badge>}
             </div>
           </div>
 
@@ -297,12 +343,15 @@ export default function InfoLineasPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-2">
-            <Button variant="secondary" onClick={handleResetRow} icon={<X className="w-4 h-4" />}>
-              Restablecer
-            </Button>
+            {!isCreating && (
+              <Button variant="secondary" onClick={handleResetRow} icon={<X className="w-4 h-4" />}>
+                Restablecer
+              </Button>
+            )}
+            {isCreating && <div />}
             <div className="flex gap-2">
               <Button variant="secondary" onClick={closeEdit}>Cancelar</Button>
-              <Button onClick={handleSave}>Guardar cambios</Button>
+              <Button onClick={handleSave}>{isCreating ? 'Crear registro' : 'Guardar cambios'}</Button>
             </div>
           </div>
         </div>
@@ -317,6 +366,13 @@ export default function InfoLineasPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="primary"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={openCreate}
+          >
+            Agregar
+          </Button>
           <Button
             variant="secondary"
             icon={<Upload className="w-4 h-4" />}
