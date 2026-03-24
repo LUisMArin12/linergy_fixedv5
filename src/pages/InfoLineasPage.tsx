@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Search, Pencil, X, Download, Trash2, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
@@ -95,6 +95,10 @@ export default function InfoLineasPage() {
   const [editing, setEditing] = useState<LineaCatalogEntry | null>(null);
   const [form, setForm] = useState<EditFormState | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
 
   const { data: lineasDB = [] } = useQuery({
     queryKey: ['lineas_db'],
@@ -274,6 +278,28 @@ export default function InfoLineasPage() {
     showToast('Registro restablecido a valores originales', 'success');
   };
 
+  const handleScrollIndicators = () => {
+    const container = tableContainerRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setShowLeftShadow(scrollLeft > 0);
+    setShowRightShadow(scrollLeft < scrollWidth - clientWidth - 1);
+  };
+
+  useEffect(() => {
+    handleScrollIndicators();
+    const container = tableContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScrollIndicators);
+      window.addEventListener('resize', handleScrollIndicators);
+      return () => {
+        container.removeEventListener('scroll', handleScrollIndicators);
+        window.removeEventListener('resize', handleScrollIndicators);
+      };
+    }
+  }, [filtered]);
+
 
 
   return (
@@ -437,28 +463,41 @@ export default function InfoLineasPage() {
       </div>
 
       {/* Desktop: table */}
-      <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-x-auto">
-        <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
-          <thead>
-            <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
-              <th className="text-left py-3 px-4 font-semibold">CLAVE ENLACE</th>
-              <th className="text-left py-3 px-4 font-semibold">DESCRIPCIÓN</th>
-              <th className="text-left py-3 px-4 font-semibold">TENSIÓN</th>
-              <th className="text-left py-3 px-4 font-semibold">KMS</th>
-              <th className="text-left py-3 px-4 font-semibold">CONDUCTOR</th>
-              <th className="text-left py-3 px-4 font-semibold">TIP. ESTRUC</th>
-              <th className="text-left py-3 px-4 font-semibold"># EST</th>
-              <th className="text-left py-3 px-4 font-semibold">AÑO</th>
-              <th className="text-left py-3 px-4 font-semibold">SAP</th>
-              <th className="text-left py-3 px-4 font-semibold">CONF</th>
-              <th className="text-left py-3 px-4 font-semibold">BRECHA</th>
-              <th className="text-left py-3 px-4 font-semibold">NC</th>
-              <th className="text-left py-3 px-4 font-semibold">POB</th>
-              <th className="text-left py-3 px-4 font-semibold">ENT</th>
-              <th className="text-right py-3 px-4 font-semibold">ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden relative">
+        {/* Indicadores de scroll lateral */}
+        {showLeftShadow && (
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/5 to-transparent pointer-events-none z-10" />
+        )}
+        {showRightShadow && (
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/5 to-transparent pointer-events-none z-10" />
+        )}
+
+        <div
+          ref={tableContainerRef}
+          className="overflow-x-auto overflow-y-visible"
+          style={{ scrollbarWidth: 'thin' }}
+        >
+          <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
+            <thead className="sticky top-0 bg-white z-[5]">
+              <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+                <th className="text-left py-3 px-4 font-semibold bg-white">CLAVE ENLACE</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">DESCRIPCIÓN</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">TENSIÓN</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">KMS</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">CONDUCTOR</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">TIP. ESTRUC</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white"># EST</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">AÑO</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">SAP</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">CONF</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">BRECHA</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">NC</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">POB</th>
+                <th className="text-left py-3 px-4 font-semibold bg-white">ENT</th>
+                <th className="text-right py-3 px-4 font-semibold bg-white">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
             {filtered.map((e) => (
               <tr key={`${e.claveEnlace}-${e.tipoEstructura}-${e.anio ?? 'na'}`} className="border-b border-[#F3F4F6]">
                 <td className="py-3 px-4 font-medium text-[#111827] whitespace-nowrap">{e.claveEnlace}</td>
@@ -506,8 +545,9 @@ export default function InfoLineasPage() {
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
