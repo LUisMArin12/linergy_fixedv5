@@ -5,76 +5,125 @@ import clsx from 'clsx';
 
 export type ToastType = 'success' | 'error' | 'info';
 
-interface ToastProps {
+interface ToastMessage {
+  id: string;
   message: string;
   type: ToastType;
-  isVisible: boolean;
-  onClose: () => void;
+}
+
+interface ToastProps {
+  toasts: ToastMessage[];
+  onRemove: (id: string) => void;
   duration?: number;
 }
 
-export default function Toast({ message, type, isVisible, onClose, duration = 3000 }: ToastProps) {
+function ToastItem({
+  id,
+  message,
+  type,
+  onRemove,
+  duration = 4000
+}: ToastMessage & { onRemove: (id: string) => void; duration?: number }) {
   useEffect(() => {
-    if (isVisible && duration) {
-      const timer = setTimeout(onClose, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, duration, onClose]);
+    const timer = setTimeout(() => onRemove(id), duration);
+    return () => clearTimeout(timer);
+  }, [id, onRemove, duration]);
 
   const iconConfig = {
     success: {
-      icon: <CheckCircle className="w-4 h-4" strokeWidth={2.5} />,
+      icon: <CheckCircle className="w-5 h-5" strokeWidth={2.5} />,
       bg: 'bg-emerald-500',
       text: 'text-white',
+      ring: 'ring-emerald-500/20',
     },
     error: {
-      icon: <AlertCircle className="w-4 h-4" strokeWidth={2.5} />,
+      icon: <AlertCircle className="w-5 h-5" strokeWidth={2.5} />,
       bg: 'bg-rose-500',
       text: 'text-white',
+      ring: 'ring-rose-500/20',
     },
     info: {
-      icon: <Info className="w-4 h-4" strokeWidth={2.5} />,
+      icon: <Info className="w-5 h-5" strokeWidth={2.5} />,
       bg: 'bg-sky-500',
       text: 'text-white',
+      ring: 'ring-sky-500/20',
     },
   };
 
   const config = iconConfig[type];
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: -50, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          className="fixed top-6 right-6 z-50 max-w-sm"
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.8, y: -20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.8, x: 100 }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+        mass: 0.5
+      }}
+      className="w-full max-w-md"
+    >
+      <div
+        className={clsx(
+          'flex items-center gap-3.5 px-4 py-3.5 rounded-2xl shadow-2xl backdrop-blur-md ring-4',
+          config.bg,
+          config.text,
+          config.ring
+        )}
+        style={{
+          boxShadow: '0 20px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15)',
+        }}
+      >
+        <div className="flex-shrink-0 bg-white/20 rounded-full p-1.5">
+          {config.icon}
+        </div>
+        <p className="text-sm font-semibold leading-relaxed flex-1 min-w-0 pr-2">
+          {message}
+        </p>
+        <button
+          onClick={() => onRemove(id)}
+          className="flex-shrink-0 p-1.5 hover:bg-white/20 rounded-lg transition-all duration-200 active:scale-95"
+          aria-label="Cerrar notificación"
         >
-          <div
-            className={clsx(
-              'flex items-center gap-3 pl-3 pr-2 py-2.5 rounded-xl shadow-lg backdrop-blur-sm',
-              config.bg,
-              config.text
-            )}
-            style={{
-              boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            <div className="flex items-center gap-2.5 flex-1 min-w-0">
-              <div className="flex-shrink-0">{config.icon}</div>
-              <p className="text-sm font-medium leading-snug">{message}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="flex-shrink-0 p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-              aria-label="Cerrar notificación"
-            >
-              <X className="w-3.5 h-3.5" strokeWidth={2.5} />
-            </button>
+          <X className="w-4 h-4" strokeWidth={2.5} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+export default function Toast({ toasts, onRemove, duration }: ToastProps) {
+  return (
+    <>
+      {toasts.length > 0 && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto"
+            onClick={() => toasts.forEach(toast => onRemove(toast.id))}
+          />
+
+          <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-md pointer-events-auto">
+            <AnimatePresence mode="popLayout">
+              {toasts.map((toast) => (
+                <ToastItem
+                  key={toast.id}
+                  id={toast.id}
+                  message={toast.message}
+                  type={toast.type}
+                  onRemove={onRemove}
+                  duration={duration}
+                />
+              ))}
+            </AnimatePresence>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

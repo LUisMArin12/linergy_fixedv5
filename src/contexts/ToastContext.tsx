@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import Toast from '../components/ui/Toast';
 
 interface ToastMessage {
+  id: string;
   message: string;
   type: 'success' | 'error' | 'info';
 }
@@ -13,25 +14,21 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
-    setToast({ message, type });
-    setIsVisible(true);
-  };
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          isVisible={isVisible}
-          onClose={() => setIsVisible(false)}
-        />
-      )}
+      <Toast toasts={toasts} onRemove={removeToast} />
     </ToastContext.Provider>
   );
 }
