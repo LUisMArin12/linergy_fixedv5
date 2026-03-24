@@ -3,7 +3,6 @@ import { Search, Pencil, X, Download, Trash2, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
-import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useSearch } from '../contexts/SearchContext';
@@ -435,81 +434,77 @@ export default function InfoLineasPage() {
       </div>
 
       {/* Desktop: table */}
-      <div className="hidden md:block">
-        <Card>
-          <div className="overflow-x-auto overflow-y-visible">
-            <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
-              <thead>
-                <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
-                  <th className="text-left py-3 px-4 font-semibold">CLAVE ENLACE</th>
-                  <th className="text-left py-3 px-4 font-semibold">DESCRIPCIÓN</th>
-                  <th className="text-left py-3 px-4 font-semibold">TENSIÓN</th>
-                  <th className="text-left py-3 px-4 font-semibold">KMS</th>
-                  <th className="text-left py-3 px-4 font-semibold">CONDUCTOR</th>
-                  <th className="text-left py-3 px-4 font-semibold">TIP. ESTRUC</th>
-                  <th className="text-left py-3 px-4 font-semibold"># EST</th>
-                  <th className="text-left py-3 px-4 font-semibold">AÑO</th>
-                  <th className="text-left py-3 px-4 font-semibold">SAP</th>
-                  <th className="text-left py-3 px-4 font-semibold">CONF</th>
-                  <th className="text-left py-3 px-4 font-semibold">BRECHA</th>
-                  <th className="text-left py-3 px-4 font-semibold">NC</th>
-                  <th className="text-left py-3 px-4 font-semibold">POB</th>
-                  <th className="text-left py-3 px-4 font-semibold">ENT</th>
-                  <th className="text-right py-3 px-4 font-semibold">ACCIONES</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((e) => (
-                  <tr key={`${e.claveEnlace}-${e.tipoEstructura}-${e.anio ?? 'na'}`} className="border-b border-[#F3F4F6]">
-                    <td className="py-3 px-4 font-medium text-[#111827] whitespace-nowrap">{e.claveEnlace}</td>
-                    <td className="py-3 px-4 text-[#111827]">{e.descripcion}</td>
-                    <td className="py-3 px-4 whitespace-nowrap"><Badge>{e.tension}</Badge></td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.kms ?? 'N/A'}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.conductor}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.tipoEstructura}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.numEstructuras ?? 'N/A'}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.anio ?? 'N/A'}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.cveSap}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.confCond}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.brecha ?? 'N/A'}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.nc ?? 'N/A'}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.pob}</td>
-                    <td className="py-3 px-4 whitespace-nowrap">{e.ent}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB]"
-                          onClick={() => openEdit(e)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                          <span className="text-xs font-medium">Editar</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="p-2 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
-                          onClick={() => {
-                            if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
-                              const next: OverridesMap = { ...overrides };
-                              next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
-                              saveOverrides(next);
-                              setOverrides(next);
-                              showToast('Registro eliminado localmente', 'success');
-                            }
-                          }}
-                          aria-label="Eliminar"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+      <div className="hidden md:block overflow-x-auto bg-white rounded-xl border border-[#E5E7EB]">
+        <table className="w-full text-sm" style={{ minWidth: '1400px' }}>
+          <thead>
+            <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+              <th className="text-left py-3 px-4 font-semibold">CLAVE ENLACE</th>
+              <th className="text-left py-3 px-4 font-semibold">DESCRIPCIÓN</th>
+              <th className="text-left py-3 px-4 font-semibold">TENSIÓN</th>
+              <th className="text-left py-3 px-4 font-semibold">KMS</th>
+              <th className="text-left py-3 px-4 font-semibold">CONDUCTOR</th>
+              <th className="text-left py-3 px-4 font-semibold">TIP. ESTRUC</th>
+              <th className="text-left py-3 px-4 font-semibold"># EST</th>
+              <th className="text-left py-3 px-4 font-semibold">AÑO</th>
+              <th className="text-left py-3 px-4 font-semibold">SAP</th>
+              <th className="text-left py-3 px-4 font-semibold">CONF</th>
+              <th className="text-left py-3 px-4 font-semibold">BRECHA</th>
+              <th className="text-left py-3 px-4 font-semibold">NC</th>
+              <th className="text-left py-3 px-4 font-semibold">POB</th>
+              <th className="text-left py-3 px-4 font-semibold">ENT</th>
+              <th className="text-right py-3 px-4 font-semibold">ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((e) => (
+              <tr key={`${e.claveEnlace}-${e.tipoEstructura}-${e.anio ?? 'na'}`} className="border-b border-[#F3F4F6]">
+                <td className="py-3 px-4 font-medium text-[#111827] whitespace-nowrap">{e.claveEnlace}</td>
+                <td className="py-3 px-4 text-[#111827]">{e.descripcion}</td>
+                <td className="py-3 px-4 whitespace-nowrap"><Badge>{e.tension}</Badge></td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.kms ?? 'N/A'}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.conductor}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.tipoEstructura}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.numEstructuras ?? 'N/A'}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.anio ?? 'N/A'}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.cveSap}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.confCond}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.brecha ?? 'N/A'}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.nc ?? 'N/A'}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.pob}</td>
+                <td className="py-3 px-4 whitespace-nowrap">{e.ent}</td>
+                <td className="py-3 px-4 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                      onClick={() => openEdit(e)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                      <span className="text-xs font-medium">Editar</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="p-2 rounded-lg border border-red-300 bg-white hover:bg-red-50 transition-colors"
+                      onClick={() => {
+                        if (confirm('¿Estás seguro de eliminar este registro localmente? Esta acción no se puede deshacer.')) {
+                          const next: OverridesMap = { ...overrides };
+                          next[e.claveEnlace] = { ...LINEAS_CATALOG.find(l => l.claveEnlace === e.claveEnlace), hidden: true } as any;
+                          saveOverrides(next);
+                          setOverrides(next);
+                          showToast('Registro eliminado localmente', 'success');
+                        }
+                      }}
+                      aria-label="Eliminar"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
